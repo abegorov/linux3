@@ -1,0 +1,27 @@
+---
+- name: Install nginx
+  ansible.builtin.dnf:
+    name: nginx
+    update_cache: true
+    state: present
+  notify: Restart nginx.service
+  tags: [nginx-package]
+
+- name: Configure nginx
+  ansible.builtin.template:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx.service
+  tags: [nginx-config]
+
+- name: Configure firewalld for nginx
+  ansible.posix.firewalld:
+    zone: public
+    port: '{{ nginx_listen_port }}/tcp'
+    immediate: true
+    permanent: true
+    state: enabled
+  tags: [nginx-firewalld]
